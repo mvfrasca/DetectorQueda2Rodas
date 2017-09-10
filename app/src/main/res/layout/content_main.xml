@@ -24,28 +24,28 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/textViewAcelerometro"
+            android:text="@string/texto_exibicao_acelerometro"
             android:id="@+id/text_view_x"
             />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/textViewAcelerometro"
+            android:text="@string/texto_exibicao_acelerometro"
             android:id="@+id/text_view_y"
             />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/textViewAcelerometro"
+            android:text="@string/texto_exibicao_acelerometro"
             android:id="@+id/text_view_z"
             />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/textViewAcelerometro"
+            android:text="@string/texto_exibicao_acelerometro"
             android:id="@+id/text_view_detail"
             />
 
@@ -53,7 +53,7 @@
             android:id="@+id/toggleButtonHabilitaLeitura"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:text="@string/textViewAcelerometro"
+            android:text="@string/texto_exibicao_acelerometro"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"

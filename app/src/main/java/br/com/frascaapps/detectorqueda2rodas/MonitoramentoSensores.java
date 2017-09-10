@@ -128,6 +128,7 @@ public class MonitoramentoSensores extends Service {
     public void onCreate() {
         super.onCreate();
         if (BuildConfig.DEBUG) Logger.log("MonitoramentoSensores onCreate");
+        mAcelerometro = new OuvinteSensor(this);
         reRegisterSensor();
     }
 

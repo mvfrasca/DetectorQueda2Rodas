@@ -58,11 +58,11 @@ public abstract class Logger {
         try {
             if (fw == null) {
                 fw = new FileWriter(new File(
-                        Environment.getExternalStorageDirectory().toString() + "/" + APP + ".log"),
+                        Environment.getExternalStorageDirectory().toString() + "/" + APP + "/" + APP + ".log"),
                         true);
             }
             date.setTime(System.currentTimeMillis());
-            fw.write(date.toLocaleString() + " - " + msg + "\n");
+            fw.write(date.toString() + " - " + msg + "\n");
             fw.flush();
         } catch (IOException e) {
             e.printStackTrace();

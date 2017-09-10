@@ -23,6 +23,7 @@ import static android.provider.AlarmClock.EXTRA_MESSAGE;
 public class MainActivity extends AppCompatActivity {
 
     public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
+    protected AppCompatActivity activity = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+//        MonitoramentoSensores monitor = new MonitoramentoSensores();
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
@@ -42,10 +44,12 @@ public class MainActivity extends AppCompatActivity {
 
         ToggleButton toggle = (ToggleButton) findViewById(R.id.toggleButtonHabilitaLeitura);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
+             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                 Intent i = new Intent(activity, MonitoramentoSensores.class);
+                 if (isChecked) {
                     // Botão ligado
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getParent().getApplicationContext());
+                    startService(i);
+                    //AlertDialog.Builder builder = new AlertDialog.Builder(getParent().getApplicationContext());
 //                    TextView editText = (TextView) findViewById(R.id.textViewAcelerometro);
 //                    String message = editText.getText().toString();
 //
@@ -55,12 +59,12 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     // Botão desligado
+                    stopService(i);
                 }
             }
         });
 
-
-    }
+            }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -83,4 +87,8 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    //        textViewX.setText("Posição X: " + x.intValue() + " Float: " + x);
+    //        textViewY.setText("Posição Y: " + y.intValue() + " Float: " + y);
+    //        textViewZ.setText("Posição Z: " + z.intValue() + " Float: " + z);
 }
