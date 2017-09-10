@@ -1,62 +1,53 @@
 package br.com.frascaapps.detectorqueda2rodas;
 
-import android.content.Context;
 import android.content.Intent;
-import android.hardware.SensorManager;
+import android.content.res.AssetManager;
 import android.os.Bundle;
-//import android.support.design.widget.FloatingActionButton;
-//import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.WebSettings;
 import android.widget.CompoundButton;
-//import android.widget.EditText;
-import android.widget.TextView;
-import android.app.AlertDialog;
 import android.widget.ToggleButton;
-//import android.app.ActivityManager.;
+import android.webkit.WebView;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import br.com.frascaapps.detectorqueda2rodas.util.Logger;
 
 import static android.provider.AlarmClock.EXTRA_MESSAGE;
+import static android.webkit.WebSettings.*;
 
 public class MainActivity extends AppCompatActivity {
 
-    public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
     protected AppCompatActivity activity = this;
+    public static final String ASSET_PATH = "file:///android_asset/";
+    private WebView webViewGrafico = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-//        MonitoramentoSensores monitor = new MonitoramentoSensores();
-
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
 
         ToggleButton toggle = (ToggleButton) findViewById(R.id.toggleButtonHabilitaLeitura);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
              public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                  Intent i = new Intent(activity, MonitoramentoSensores.class);
+
                  if (isChecked) {
                     // Botão ligado
                     startService(i);
-                    //AlertDialog.Builder builder = new AlertDialog.Builder(getParent().getApplicationContext());
-//                    TextView editText = (TextView) findViewById(R.id.textViewAcelerometro);
-//                    String message = editText.getText().toString();
-//
-//                    builder.setMessage(message)
-//                            .setTitle(R.string.app_name);
-//                    AlertDialog dialog = builder.create();
-
+                    Intent startMain = new Intent(Intent.ACTION_MAIN);
+                    startMain.addCategory(Intent.CATEGORY_HOME);
+                    startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(startMain);
                 } else {
                     // Botão desligado
                     stopService(i);
@@ -64,7 +55,39 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-            }
+        // COnfiguração da webview para exibição do gráfico
+        webViewGrafico = (WebView) findViewById(R.id.webViewGrafico);
+        WebSettings webSettings = webViewGrafico.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setBuiltInZoomControls(true);
+
+        carregarGrafico();
+    }
+
+    private void carregarGrafico() {
+        String content = null;
+        try {
+            AssetManager assetManager = getAssets();
+            InputStream in = assetManager.open("template_grafico.html");
+            byte[] bytes = readFully(in);
+            content = new String(bytes, "UTF-8");
+        } catch (Exception e) {
+            Logger.log("Erro ao carregar gráfico: " + e.toString());
+        }
+        //String formattedContent = String.format(content, mushrooms, onions, olives, pepperoni);
+        //webView.loadDataWithBaseURL(ASSET_PATH, formattedContent, "text/html", "utf-8", null);
+        webViewGrafico.loadDataWithBaseURL(ASSET_PATH, content, "text/html", "utf-8", null);
+        webViewGrafico.requestFocusFromTouch();
+    }
+
+    private static byte[] readFully(InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        for (int count; (count = in.read(buffer)) != -1; ) {
+            out.write(buffer, 0, count);
+        }
+        return out.toByteArray();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

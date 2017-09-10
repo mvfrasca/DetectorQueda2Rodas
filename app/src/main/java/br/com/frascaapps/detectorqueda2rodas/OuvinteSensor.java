@@ -21,10 +21,10 @@ public class OuvinteSensor implements SensorEventListener {
     private Sensor mAccelerometer;
     private Context contexto;
 
-    public OuvinteSensor(Context context) {
+    public OuvinteSensor(Context context, int tipoSensor ) {
         contexto = context;
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mAccelerometer = mSensorManager.getDefaultSensor(tipoSensor);
     }
 
     protected void iniciarLeituraSensor() {
@@ -40,7 +40,7 @@ public class OuvinteSensor implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        Logger.log(sensor.getName() + " accuracy changed: " + accuracy);
+        Logger.log(sensor.getName() + " Acurácia do sensor alterada para: " + accuracy);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class OuvinteSensor implements SensorEventListener {
         Float z = event.values[2];
 
         if (event.values[0] > Integer.MAX_VALUE) {
-            if (BuildConfig.DEBUG) Logger.log("probably not a real value: " + event.values[0]);
+            if (BuildConfig.DEBUG) Logger.log("Valores lidos provavelmente irreais (leitura desconsiderada): " + event.values[0]);
             return;
         } else {
             atualizarLog(x,y,z);
@@ -75,7 +75,7 @@ public class OuvinteSensor implements SensorEventListener {
             Quanto maior o valor de Z Mais ele esta inclinado para frente
             Quanto menor o valor de Z Mais ele esta inclinado para traz.
         */
-        if (y < 0) { // O dispositivo esta de cabeça pra baixo
+        /*if (y < 0) { // O dispositivo esta de cabeça pra baixo
             if (x > 0)
                 info_adicional = "Virando para ESQUERDA ficando INVERTIDO";
             if (x < 0)
@@ -85,8 +85,8 @@ public class OuvinteSensor implements SensorEventListener {
                 info_adicional = "Virando para ESQUERDA ";
             if (x < 0)
                 info_adicional = "Virando para DIREITA ";
-        }
+        }*/
         data_hora_log.setTime(System.currentTimeMillis());
-        db.incluirLeituraSensor(data_hora_log,x,y,z,info_adicional);
+        db.incluirLeituraSensor(data_hora_log,x,y,z);
     }
 }

@@ -22,6 +22,7 @@ import android.os.Environment;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public abstract class Logger {
@@ -54,6 +55,7 @@ public abstract class Logger {
 
     @SuppressWarnings("deprecation")
     public static void log(String msg) {
+        SimpleDateFormat dtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         android.util.Log.d(APP, msg);
         try {
             if (fw == null) {
@@ -62,7 +64,8 @@ public abstract class Logger {
                         true);
             }
             date.setTime(System.currentTimeMillis());
-            fw.write(date.toString() + " - " + msg + "\n");
+
+            fw.write(dtFormat.format(date) + " - " + msg + "\n");
             fw.flush();
         } catch (IOException e) {
             e.printStackTrace();

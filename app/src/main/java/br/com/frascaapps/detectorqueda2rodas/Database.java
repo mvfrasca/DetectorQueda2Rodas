@@ -47,8 +47,9 @@ public class Database extends SQLiteOpenHelper {
     private final static String APP = "detectorqueda2rodas";
     private final static String DB_NAME = "DB_Log";
     private final static int DB_VERSION = 1;
-    private final static String TABELA_LOG_ACELEROMETRO = "tb_log_acelerometro";
-    private final static String TABELA_LOG = "tb_log";
+    private final static String TB_TIPO_MOVIMENTO = "tb_tipo_movimento";
+    private final static String TB_LOG_ACELEROMETRO = "tb_log_acelerometro";
+    private final static String TB_LOG = "tb_log";
 
     private static Database instance;
     private static final AtomicInteger openCounter = new AtomicInteger();
@@ -74,8 +75,9 @@ public class Database extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(final SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + TABELA_LOG + " (data_hora_log INTEGER, mensagem VARCHAR(255) )");
-        db.execSQL("CREATE TABLE " + TABELA_LOG_ACELEROMETRO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT, info_adicional VARCHAR(80))");
+        db.execSQL("CREATE TABLE " + TB_LOG + " (data_hora_log INTEGER, mensagem VARCHAR(255) )");
+//        db.execSQL("CREATE TABLE " + TB_TIPO_MOVIMENTO + " (id_movimento INTEGER PRIMARY KEY, descricao_movimento VARCHAR(80))");
+        db.execSQL("CREATE TABLE " + TB_LOG_ACELEROMETRO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
     }
 
     @Override
@@ -105,7 +107,7 @@ public class Database extends SQLiteOpenHelper {
                         final String[] selectionArgs, final String groupBy, final String having,
                         final String orderBy, final String limit) {
         return getReadableDatabase()
-                .query(TABELA_LOG_ACELEROMETRO, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
+                .query(TB_LOG_ACELEROMETRO, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
     }
 
     /**
@@ -123,24 +125,27 @@ public class Database extends SQLiteOpenHelper {
      * //@param steps the current step value to be used as negative offset for the
      *              new day; must be >= 0
      */
-    public void incluirLeituraSensor(Date data_hora_log, float x, float y, float z, String info_adicional) {
+    public void incluirLeituraSensor(Date data_hora_log, float x, float y, float z) {
         getWritableDatabase().beginTransaction();
         try {
             // add today
             ContentValues values = new ContentValues();
-            SimpleDateFormat dtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat dtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
             values.put("data_hora_log", dtFormat.format(data_hora_log));
             values.put("x", x);
             values.put("y", y);
             values.put("z", z);
-            values.put("info_adicional", info_adicional);
 
-            getWritableDatabase().insert(TABELA_LOG_ACELEROMETRO, null, values);
+            getWritableDatabase().insert(TB_LOG_ACELEROMETRO, null, values);
 
-            Logger.log("Log acelerômetro: " + data_hora_log.toString() + " -  X: " + x + "; Y: " + y + "; Z: " + z);
             getWritableDatabase().setTransactionSuccessful();
-        } finally {
+//            Logger.log("Log Acelerômetro: X: " + x + "; Y: " + y + "; Z: " + z + "; " + info_adicional );
+        }
+        catch (Exception e) {
+            Logger.log("Erro ao gravar leitura sensor: " + e.toString());
+        }
+        finally {
             getWritableDatabase().endTransaction();
         }
     }
@@ -156,6 +161,7 @@ public class Database extends SQLiteOpenHelper {
                 // it as created.
                 getWritableDatabase().close();
             //}
+            Logger.log("Backup do banco gerado em " + newDb.getPath() + "; tamanho: " + newDb.length() / 1000 + " Kb");
         }
         catch(Exception e)
         {

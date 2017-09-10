@@ -1,0 +1,45 @@
+<html>
+<head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="./jsapi.js"></script>
+    <script type="text/javascript">
+      // Load the Visualization API and the line chart package.
+      google.charts.load('current', {packages: ['corechart', 'line']});
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+        // Create the data table.
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Tempo');
+        data.addColumn('number', 'm/s²');
+        data.addRows([
+          ['19:07:01.001', 0.23006],
+          ['19:07:01.003', 0.25006],
+          ['19:07:01.007', 0.27006],
+          ['19:07:01.009', 0.32006]
+        ]);
+        // Set chart options
+        var options =  {
+                            'title':'Acelerômetro',
+                            hAxis: {
+                              title: 'Tempo'
+                            },
+                            vAxis: {
+                              title: 'm/s²'
+                            }
+                        };
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+</head>
+
+<body>
+<!--Div that will hold the pie chart-->
+<div id="chart_div"></div>
+</body>
+</html>

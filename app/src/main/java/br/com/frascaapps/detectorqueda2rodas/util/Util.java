@@ -16,9 +16,20 @@
 
 package br.com.frascaapps.detectorqueda2rodas.util;
 
+import android.app.NotificationManager;
+import android.os.Environment;
+import android.support.v4.app.NotificationCompat;
+import android.content.Context;
 import java.util.Calendar;
 
+import br.com.frascaapps.detectorqueda2rodas.R;
+
+import static android.content.Context.NOTIFICATION_SERVICE;
+
 public abstract class Util {
+
+    private static NotificationManager mNotifyMgr;
+    private static int mNotificationId = 1;
 
     /**
      * @return milliseconds since 1.1.1970 for today 0:00:00 local timezone
@@ -45,5 +56,22 @@ public abstract class Util {
         c.set(Calendar.MILLISECOND, 0);
         c.add(Calendar.DATE, 1);
         return c.getTimeInMillis();
+    }
+
+    public static void gerarNotificacao(Context contexto, String tituloMensagem, String mensagem) {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(contexto)
+                        .setSmallIcon(R.drawable.moto_queda_notify_icon)
+                        .setContentTitle(tituloMensagem)
+                        .setContentText(mensagem);
+        mNotifyMgr = (NotificationManager) contexto.getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+    }
+
+    public static void cancelarNotificacao(String mensagem) {
+        try {
+            mNotifyMgr.cancel(mensagem, mNotificationId);
+        }
+        catch (Exception e) {}
     }
 }
