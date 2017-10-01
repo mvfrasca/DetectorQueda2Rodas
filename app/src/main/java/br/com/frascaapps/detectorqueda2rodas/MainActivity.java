@@ -1,25 +1,25 @@
 package br.com.frascaapps.detectorqueda2rodas;
 
 import android.content.Intent;
-import android.content.res.AssetManager;
+//import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.webkit.WebSettings;
+//import android.webkit.WebSettings;
 import android.widget.CompoundButton;
 import android.widget.ToggleButton;
 import android.webkit.WebView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import br.com.frascaapps.detectorqueda2rodas.util.Logger;
-
-import static android.provider.AlarmClock.EXTRA_MESSAGE;
-import static android.webkit.WebSettings.*;
+//import java.io.ByteArrayOutputStream;
+//import java.io.IOException;
+//import java.io.InputStream;
+//
+//import br.com.frascaapps.detectorqueda2rodas.util.Logger;
+//
+//import static android.provider.AlarmClock.EXTRA_MESSAGE;
+//import static android.webkit.WebSettings.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,13 +41,13 @@ public class MainActivity extends AppCompatActivity {
              public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                  Intent i = new Intent(activity, MonitoramentoSensores.class);
 
-                 if (isChecked) {
+                if (isChecked) {
                     // Botão ligado
+//                    Intent startMain = new Intent(Intent.ACTION_MAIN);
+//                    startMain.addCategory(Intent.CATEGORY_HOME);
+//                    startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                     startActivity(startMain);
                     startService(i);
-                    Intent startMain = new Intent(Intent.ACTION_MAIN);
-                    startMain.addCategory(Intent.CATEGORY_HOME);
-                    startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(startMain);
                 } else {
                     // Botão desligado
                     stopService(i);
@@ -55,16 +55,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // COnfiguração da webview para exibição do gráfico
+/*        // COnfiguração da webview para exibição do gráfico
         webViewGrafico = (WebView) findViewById(R.id.webViewGrafico);
         WebSettings webSettings = webViewGrafico.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setBuiltInZoomControls(true);
 
-        carregarGrafico();
+        carregarGrafico();*/
     }
 
-    private void carregarGrafico() {
+    /*private void carregarGrafico() {
         String content = null;
         try {
             AssetManager assetManager = getAssets();
@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             out.write(buffer, 0, count);
         }
         return out.toByteArray();
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

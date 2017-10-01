@@ -21,14 +21,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         tools:ignore="MissingConstraints">
 
-        <WebView
-            android:id="@+id/webViewGrafico"
-            android:layout_width="300dp"
-            android:layout_height="200dp"
-            android:layout_gravity="center"
-            tools:layout_editor_absoluteX="8dp"
-            tools:layout_editor_absoluteY="8dp" />
-
         <ToggleButton
             android:id="@+id/toggleButtonHabilitaLeitura"
             android:layout_width="wrap_content"

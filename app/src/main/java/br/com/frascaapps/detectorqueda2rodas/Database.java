@@ -21,6 +21,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.hardware.Sensor;
 import android.os.Environment;
 import android.util.Pair;
 
@@ -49,6 +50,7 @@ public class Database extends SQLiteOpenHelper {
     private final static int DB_VERSION = 1;
     private final static String TB_TIPO_MOVIMENTO = "tb_tipo_movimento";
     private final static String TB_LOG_ACELEROMETRO = "tb_log_acelerometro";
+    private final static String TB_LOG_GIROSCOPIO = "tb_log_giroscopio";
     private final static String TB_LOG = "tb_log";
 
     private static Database instance;
@@ -78,6 +80,7 @@ public class Database extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + TB_LOG + " (data_hora_log INTEGER, mensagem VARCHAR(255) )");
 //        db.execSQL("CREATE TABLE " + TB_TIPO_MOVIMENTO + " (id_movimento INTEGER PRIMARY KEY, descricao_movimento VARCHAR(80))");
         db.execSQL("CREATE TABLE " + TB_LOG_ACELEROMETRO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
+        db.execSQL("CREATE TABLE " + TB_LOG_GIROSCOPIO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
     }
 
     @Override
@@ -95,6 +98,7 @@ public class Database extends SQLiteOpenHelper {
     /**
      * Query the 'steps' table. Remember to close the cursor!
      *
+     * @param table         the table
      * @param columns       the colums
      * @param selection     the selection
      * @param selectionArgs the selction arguments
@@ -103,11 +107,11 @@ public class Database extends SQLiteOpenHelper {
      * @param orderBy       the order by statement
      * @return the cursor
      */
-    public Cursor query(final String[] columns, final String selection,
+    public Cursor query(final String table, final String[] columns, final String selection,
                         final String[] selectionArgs, final String groupBy, final String having,
                         final String orderBy, final String limit) {
         return getReadableDatabase()
-                .query(TB_LOG_ACELEROMETRO, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
+                .query(table, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
     }
 
     /**
@@ -125,9 +129,23 @@ public class Database extends SQLiteOpenHelper {
      * //@param steps the current step value to be used as negative offset for the
      *              new day; must be >= 0
      */
-    public void incluirLeituraSensor(Date data_hora_log, float x, float y, float z) {
+    public void incluirLeituraSensor(int tipoSensor, Date data_hora_log, float x, float y, float z) {
+        String tabelaSensor = "";
         getWritableDatabase().beginTransaction();
         try {
+            // Definição da tabela de acordo com o tipo de sensor
+            switch (tipoSensor) {
+                case Sensor.TYPE_ACCELEROMETER:
+                    tabelaSensor = TB_LOG_ACELEROMETRO;
+                    break;
+                case Sensor.TYPE_GYROSCOPE:
+                    tabelaSensor = TB_LOG_GIROSCOPIO;
+                    break;
+                default:
+                    Logger.log("Tipo de Sensor [ " + tipoSensor + " ] não esperado.");
+                    //TODO: disparar exceção
+            }
+
             // add today
             ContentValues values = new ContentValues();
             SimpleDateFormat dtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -137,13 +155,13 @@ public class Database extends SQLiteOpenHelper {
             values.put("y", y);
             values.put("z", z);
 
-            getWritableDatabase().insert(TB_LOG_ACELEROMETRO, null, values);
+            getWritableDatabase().insert(tabelaSensor, null, values);
 
             getWritableDatabase().setTransactionSuccessful();
 //            Logger.log("Log Acelerômetro: X: " + x + "; Y: " + y + "; Z: " + z + "; " + info_adicional );
         }
         catch (Exception e) {
-            Logger.log("Erro ao gravar leitura sensor: " + e.toString());
+            Logger.log("Erro ao gravar leitura sensor em [ " + tabelaSensor + " ]: " + e.toString());
         }
         finally {
             getWritableDatabase().endTransaction();

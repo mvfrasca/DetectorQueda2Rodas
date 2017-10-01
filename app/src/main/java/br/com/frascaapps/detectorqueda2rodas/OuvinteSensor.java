@@ -18,17 +18,18 @@ import br.com.frascaapps.detectorqueda2rodas.util.Util;
 public class OuvinteSensor implements SensorEventListener {
 
     private SensorManager mSensorManager;
-    private Sensor mAccelerometer;
+    private Sensor mSensor;
     private Context contexto;
 
     public OuvinteSensor(Context context, int tipoSensor ) {
         contexto = context;
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(tipoSensor);
+        mSensor = mSensorManager.getDefaultSensor(tipoSensor);
+        Logger.log("Sensor [ " + mSensor.getName() + " ]  iniciado. Detalhes do sensor: " + mSensor.toString());
     }
 
     protected void iniciarLeituraSensor() {
-        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     protected void pararLeituraSensor() {
@@ -87,6 +88,6 @@ public class OuvinteSensor implements SensorEventListener {
                 info_adicional = "Virando para DIREITA ";
         }*/
         data_hora_log.setTime(System.currentTimeMillis());
-        db.incluirLeituraSensor(data_hora_log,x,y,z);
+        db.incluirLeituraSensor(mSensor.getType(), data_hora_log,x,y,z);
     }
 }
