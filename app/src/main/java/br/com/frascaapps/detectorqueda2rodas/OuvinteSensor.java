@@ -46,7 +46,6 @@ public class OuvinteSensor implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        String descricaoMovimento = "";
 
         Float x = event.values[0];
         Float y = event.values[1];

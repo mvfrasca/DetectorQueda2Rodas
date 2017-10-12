@@ -7,4 +7,9 @@
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menuExpurgar"
+        android:orderInCategory="100"
+        android:title="@string/menuExpurgar"
+        app:showAsAction="never" />
 </menu>

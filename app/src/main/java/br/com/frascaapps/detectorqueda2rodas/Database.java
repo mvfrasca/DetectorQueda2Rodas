@@ -51,6 +51,7 @@ public class Database extends SQLiteOpenHelper {
     private final static String TB_TIPO_MOVIMENTO = "tb_tipo_movimento";
     private final static String TB_LOG_ACELEROMETRO = "tb_log_acelerometro";
     private final static String TB_LOG_GIROSCOPIO = "tb_log_giroscopio";
+    private final static String TB_LOG_LOCALIZACAO = "tb_log_localizacao";
     private final static String TB_LOG = "tb_log";
 
     private static Database instance;
@@ -81,6 +82,7 @@ public class Database extends SQLiteOpenHelper {
 //        db.execSQL("CREATE TABLE " + TB_TIPO_MOVIMENTO + " (id_movimento INTEGER PRIMARY KEY, descricao_movimento VARCHAR(80))");
         db.execSQL("CREATE TABLE " + TB_LOG_ACELEROMETRO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
         db.execSQL("CREATE TABLE " + TB_LOG_GIROSCOPIO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
+        db.execSQL("CREATE TABLE " + TB_LOG_LOCALIZACAO + " (data_hora_log INTEGER, latitude DOUBLE, longitude DOUBLE, altitude DOUBLE, velocidade FLOAT, acuracia FLOAT )");
     }
 
     @Override
@@ -168,6 +170,49 @@ public class Database extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Inserts a new entry in the database, if there is no entry for the given
+     * date yet. Steps should be the current number of steps and it's negative
+     * value will be used as offset for the new date. Also adds 'steps' steps to
+     * the previous day, if there is an entry for that date.
+     * <p/>
+     * This method does nothing if there is already an entry for 'date' - use
+     * {@link //#updateSteps} in this case.
+     * <p/>
+     * To restore data from a backup, use {@link //#insertDayFromBackup}
+     *
+     * //@param date  the date in ms since 1970
+     * //@param steps the current step value to be used as negative offset for the
+     *              new day; must be >= 0
+     */
+    public void incluirLocalizacao(Date data_hora_log, Double latitude, Double longitude, Double altitude, Float velocidade, Float acuracia) {
+
+        getWritableDatabase().beginTransaction();
+        try {
+
+            // add today
+            ContentValues values = new ContentValues();
+            SimpleDateFormat dtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
+            values.put("data_hora_log", dtFormat.format(data_hora_log));
+            values.put("latitude", latitude);
+            values.put("longitude", longitude);
+            values.put("altitude", altitude);
+            values.put("velocidade", velocidade);
+            values.put("acuracia", acuracia);
+
+            getWritableDatabase().insert(TB_LOG_LOCALIZACAO, null, values);
+
+            getWritableDatabase().setTransactionSuccessful();
+        }
+        catch (Exception e) {
+            Logger.log("Erro ao gravar localização: " + e.toString());
+        }
+        finally {
+            getWritableDatabase().endTransaction();
+        }
+    }
+
     public void gerarBackupBD() {
         try {
             close();
@@ -180,6 +225,21 @@ public class Database extends SQLiteOpenHelper {
                 getWritableDatabase().close();
             //}
             Logger.log("Backup do banco gerado em " + newDb.getPath() + "; tamanho: " + newDb.length() / 1000 + " Kb");
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void expurgarBD() {
+
+        String condicao = "data_hora_log < date('now','-1 day')";
+        try {
+            getWritableDatabase().delete(TB_LOG_ACELEROMETRO, condicao, null);
+            getWritableDatabase().delete(TB_LOG_GIROSCOPIO, condicao, null);
+            getWritableDatabase().delete(TB_LOG_LOCALIZACAO, condicao, null);
+            Logger.log("Expurgo do banco de dados realizado com sucesso");
         }
         catch(Exception e)
         {

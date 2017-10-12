@@ -12,6 +12,9 @@ import android.widget.CompoundButton;
 import android.widget.ToggleButton;
 import android.webkit.WebView;
 
+import br.com.frascaapps.detectorqueda2rodas.util.FileUtils;
+import br.com.frascaapps.detectorqueda2rodas.util.Logger;
+
 //import java.io.ByteArrayOutputStream;
 //import java.io.IOException;
 //import java.io.InputStream;
@@ -104,8 +107,16 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.menuExpurgar:
+                Logger.expurgarLog();
+                Database db = Database.getInstance(this);
+                db.expurgarBD();
+                break;
+            default:
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
