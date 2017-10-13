@@ -12,4 +12,9 @@
         android:orderInCategory="100"
         android:title="@string/menuExpurgar"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menuMapa"
+        android:orderInCategory="100"
+        android:title="@string/menuMapa"
+        app:showAsAction="never" />
 </menu>

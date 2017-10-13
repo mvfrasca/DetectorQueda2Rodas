@@ -27,7 +27,6 @@ public class OuvinteLocalizacao implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         try {
-            Logger.log("onLocationChanged - iniciado");
             Database db = Database.getInstance(contexto);
             Date data_hora_log = new Date();
 
@@ -36,11 +35,12 @@ public class OuvinteLocalizacao implements LocationListener {
             Double altitude = location.getAltitude();
             Float velocidade = location.getSpeed();
             Float acuracia = location.getAccuracy();
+            String provedor = location.getProvider();
 
             data_hora_log.setTime(System.currentTimeMillis());
-            db.incluirLocalizacao(data_hora_log, latitude, longitude, altitude, velocidade, acuracia);
+            db.incluirLocalizacao(data_hora_log, latitude, longitude, altitude, velocidade, acuracia, provedor);
         } catch (Exception ex) {
-            mensagem = "iniciarMonitoramentoLocalizacao - Erro: " + ex.toString() + "\n." + ex.getStackTrace().toString();
+            mensagem = "onLocationChanged - Erro: " + ex.toString() + "\n." + ex.getStackTrace().toString();
             Logger.log(mensagem);
         }
     }
@@ -68,11 +68,11 @@ public class OuvinteLocalizacao implements LocationListener {
 
     @Override
     public void onProviderEnabled(String provider) {
-        Logger.log("Provedor de localização [ " + provider.toString() + " ] habilitado");
+        Logger.log("Provedor de localização [ " + provider.toString() + " ] habilitado pelo usuário");
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-        Logger.log("Provedor de localização [ " + provider.toString() + " ] desabilitado");
+        Logger.log("Provedor de localização [ " + provider.toString() + " ] desabilitado pelo usuário");
     }
 }

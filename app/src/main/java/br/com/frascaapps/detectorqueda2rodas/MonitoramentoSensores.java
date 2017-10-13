@@ -152,7 +152,7 @@ public class MonitoramentoSensores extends Service {
         //super.onCreate();
 
         //PendingIntent contentIntent = PendingIntent.getActivity(MonitoramentoSensores.this, 0, new Intent(MonitoramentoSensores.this,   MonitoramentoSensores.class), 0);
-        Util.gerarNotificacao(this, "Monitoramento de Queda em 2 Rodas", "Serviço de monitoramento iniciado.");
+        Util.gerarNotificacao(this, "2 Wheels Fall Monitoring", "Serviço de monitoramento iniciado.");
         if (BuildConfig.DEBUG) Logger.log("Serviço de monitoramento iniciado - onCreate");
 
         HandlerThread thread = new HandlerThread("ServiceStartArguments",
@@ -235,10 +235,10 @@ public class MonitoramentoSensores extends Service {
                 mensagem = "Provedor instanciado - Ok";
                 Logger.log(mensagem);
 
-                long tempo = 1000; //1 segundo
-                float distancia = 0; // 2 metros
+                long tempo = 3000; //3 segundos
+                float distancia = 0; // 0 metros
 
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, tempo, distancia, ouvinteLocalizacao);
+                locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, tempo, distancia, ouvinteLocalizacao);
 
                 mensagem = "Requisição de atualização de localização registrada - Ok";
                 Logger.log(mensagem);

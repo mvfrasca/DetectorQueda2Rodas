@@ -82,7 +82,7 @@ public class Database extends SQLiteOpenHelper {
 //        db.execSQL("CREATE TABLE " + TB_TIPO_MOVIMENTO + " (id_movimento INTEGER PRIMARY KEY, descricao_movimento VARCHAR(80))");
         db.execSQL("CREATE TABLE " + TB_LOG_ACELEROMETRO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
         db.execSQL("CREATE TABLE " + TB_LOG_GIROSCOPIO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
-        db.execSQL("CREATE TABLE " + TB_LOG_LOCALIZACAO + " (data_hora_log INTEGER, latitude DOUBLE, longitude DOUBLE, altitude DOUBLE, velocidade FLOAT, acuracia FLOAT )");
+        db.execSQL("CREATE TABLE " + TB_LOG_LOCALIZACAO + " (data_hora_log INTEGER, latitude DOUBLE, longitude DOUBLE, altitude DOUBLE, velocidade FLOAT, acuracia FLOAT, provedor VARCHAR(255))");
     }
 
     @Override
@@ -163,7 +163,7 @@ public class Database extends SQLiteOpenHelper {
 //            Logger.log("Log Acelerômetro: X: " + x + "; Y: " + y + "; Z: " + z + "; " + info_adicional );
         }
         catch (Exception e) {
-            Logger.log("Erro ao gravar leitura sensor em [ " + tabelaSensor + " ]: " + e.toString());
+            Logger.log("Erro ao gravar leitura sensor em [ " + tabelaSensor + " ]: " + e.toString() + "\n" + e.getStackTrace().toString());
         }
         finally {
             getWritableDatabase().endTransaction();
@@ -185,7 +185,7 @@ public class Database extends SQLiteOpenHelper {
      * //@param steps the current step value to be used as negative offset for the
      *              new day; must be >= 0
      */
-    public void incluirLocalizacao(Date data_hora_log, Double latitude, Double longitude, Double altitude, Float velocidade, Float acuracia) {
+    public void incluirLocalizacao(Date data_hora_log, Double latitude, Double longitude, Double altitude, Float velocidade, Float acuracia, String provedor) {
 
         getWritableDatabase().beginTransaction();
         try {
@@ -200,13 +200,14 @@ public class Database extends SQLiteOpenHelper {
             values.put("altitude", altitude);
             values.put("velocidade", velocidade);
             values.put("acuracia", acuracia);
+            values.put("provedor", provedor);
 
             getWritableDatabase().insert(TB_LOG_LOCALIZACAO, null, values);
 
             getWritableDatabase().setTransactionSuccessful();
         }
         catch (Exception e) {
-            Logger.log("Erro ao gravar localização: " + e.toString());
+            Logger.log("Erro ao gravar localização: " + e.toString() + ". \n" + e.getStackTrace().toString());
         }
         finally {
             getWritableDatabase().endTransaction();
@@ -229,6 +230,7 @@ public class Database extends SQLiteOpenHelper {
         catch(Exception e)
         {
             e.printStackTrace();
+            Logger.log("Erro ao gravar backup: " + e.toString() + ". \n" + e.getStackTrace().toString());
         }
     }
 
@@ -244,6 +246,7 @@ public class Database extends SQLiteOpenHelper {
         catch(Exception e)
         {
             e.printStackTrace();
+            Logger.log("Erro ao realiza expurgo BD: " + e.toString() + ". \n" + e.getStackTrace().toString());
         }
     }
 

@@ -3,4 +3,5 @@
     <string name="action_settings">Configurações</string>
     <string name="texto_exibicao_acelerometro">Acelerômetro</string>
     <string name="menuExpurgar">Expurgar log</string>
+    <string name="menuMapa">Visualizar Mapa</string>
 </resources>

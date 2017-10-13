@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        Intent intent;
         switch (id) {
             case R.id.action_settings:
                 return true;
@@ -114,6 +115,11 @@ public class MainActivity extends AppCompatActivity {
                 Logger.expurgarLog();
                 Database db = Database.getInstance(this);
                 db.expurgarBD();
+                break;
+            case R.id.menuMapa:
+                intent = new Intent(this, MapaActivity.class);
+                //intent.putExtra(EXTRA_MESSAGE, message);
+                startActivity(intent);
                 break;
             default:
                 return true;
