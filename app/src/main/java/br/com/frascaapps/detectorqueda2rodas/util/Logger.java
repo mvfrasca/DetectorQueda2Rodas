@@ -122,12 +122,16 @@ public abstract class Logger {
 
             // Reinstancia para recarregar desde a primeira linha
             linhaLeitura = new LineNumberReader(new FileReader(arquivoLog));
-            linhaLeitura.setLineNumber(qtdLinhas - 100);
-            String linha = linhaLeitura.readLine() ; // lê a primeira linha
+            // Posiciona na linha esperada do arquivo de log original
+            while (linhaLeitura.getLineNumber() < qtdLinhas - 100) {
+                linhaLeitura.readLine(); // lê próxima linha
+            }
+            // Lê a primeira linha a ser grava
+            String linha = linhaLeitura.readLine();
 
             while (linha != null) {
                 fwtmp.write(linha + "\n");
-                linha = linhaLeitura.readLine(); // lê da próxima linhamarkedLastWasCR = false
+                linha = linhaLeitura.readLine(); // lê da próxima
             }
             date.setTime(System.currentTimeMillis());
             fwtmp.write(dtFormat.format(date) + " - Expurgo efetuado com sucesso \n");
@@ -166,6 +170,7 @@ public abstract class Logger {
 
         } catch (IOException e) {
             e.printStackTrace();
+            Logger.log("Erro ao realizar expurgo: " + e.toString() + "\n" + e.getStackTrace().toString());
         }
         // }
     }

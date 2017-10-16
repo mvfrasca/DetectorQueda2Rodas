@@ -17,11 +17,14 @@
 package br.com.frascaapps.detectorqueda2rodas.util;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.content.Context;
 import java.util.Calendar;
 
+import br.com.frascaapps.detectorqueda2rodas.MainActivity;
 import br.com.frascaapps.detectorqueda2rodas.R;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
@@ -59,11 +62,24 @@ public abstract class Util {
     }
 
     public static void gerarNotificacao(Context contexto, String tituloMensagem, String mensagem) {
+
+        Intent resultIntent = new Intent(contexto, MainActivity.class);
+
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(contexto,
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(contexto)
                         .setSmallIcon(R.drawable.moto_queda_notify_icon)
                         .setContentTitle(tituloMensagem)
-                        .setContentText(mensagem);
+                        .setContentText(mensagem)
+                        .setVibrate(new long[] { 200, 200 })
+                        .setContentIntent(resultPendingIntent);
+//                        .setOngoing(true);
+
         mNotifyMgr = (NotificationManager) contexto.getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }

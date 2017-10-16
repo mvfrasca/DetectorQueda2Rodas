@@ -32,6 +32,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Messenger;
 import android.os.Process;
 import android.support.v4.app.ActivityCompat;
 
@@ -47,6 +48,14 @@ import br.com.frascaapps.detectorqueda2rodas.util.Util;
  */
 public class MonitoramentoSensores extends Service {
 
+//    private static volatile MonitoramentoSensores mSingletonInstancia;
+    public static final String MY_SERVICE = "br.com.frascaapps.detectorqueda2rodas.MonitoramentoSensores";
+    static final int MSG_PARAR_MONITORAMENTO = 1;
+
+    /**
+     * Target we publish for clients to send messages to IncomingHandler.
+     */
+    final Messenger mMessenger = new Messenger(new IncomingHandler());
     private final IBinder mBinder = (IBinder) new LocalBinder();
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
@@ -55,6 +64,22 @@ public class MonitoramentoSensores extends Service {
     private Context mContexto;
     private int mStartId = 0;
     String mensagem = "";
+
+//    private MonitoramentoSensores(){
+//        //Prevent form the reflection api.
+//        if (mSingletonInstancia != null){
+//            throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
+//        }
+//    }
+//
+//    public static MonitoramentoSensores getInstance(){
+//        if (mSingletonInstancia == null){ //if there is no instance available... create new one
+//            synchronized (MonitoramentoSensores.class) {
+//                if (mSingletonInstancia == null) mSingletonInstancia = new MonitoramentoSensores();
+//            }
+//        }
+//        return mSingletonInstancia;
+//    }
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
@@ -69,8 +94,8 @@ public class MonitoramentoSensores extends Service {
             // Normally we would do some work here, like download a file.
             // For our sample, we just sleep for 5 seconds.
             try {
-                mensagem = "Registrando serviço de monitoramento. ID: " + msg.arg1;
-                if (BuildConfig.DEBUG) Logger.log(mensagem);
+                mensagem = "Registrando serviço de monitoramento. ID: " + msg.toString();
+                Logger.log(mensagem);
 
                 // Se o sensor for o tipo escolhido para definir o GPS
                 if (msg.arg2 == Sensor.TYPE_DEVICE_PRIVATE_BASE) {
@@ -83,13 +108,14 @@ public class MonitoramentoSensores extends Service {
                     try {
                         mSensor.pararLeituraSensor();
                     } catch (Exception e) {
-                        if (BuildConfig.DEBUG) Logger.log(e);
+                        Logger.log("Erro ao parar leitura do sensor [ " + msg.toString() + " ]. Detalhes: " + e.toString() + "\n" + e.getStackTrace().toString());
                         e.printStackTrace();
                     }
                     mSensor.iniciarLeituraSensor();
                 }
             } catch (Exception e) {
                 // Restore interrupt status.
+                Logger.log("Erro ao iniciar Thread do sensor [ " + msg.toString() + " ]. Detalhes: " + e.toString() + "\n" + e.getStackTrace().toString());
                 Thread.currentThread().interrupt();
             }
             // Stop the service using the startId, so that we don't stop
@@ -101,17 +127,55 @@ public class MonitoramentoSensores extends Service {
     public class LocalBinder extends Binder {
         MonitoramentoSensores getService() {
             return MonitoramentoSensores.this;
+//            return null;
         }
     }
 
-//    protected void pararLeituraSensores() {
-//        //Para a leitura de todos os sensores
+    /**
+     * Handler of incoming messages from clients.
+     */
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            Logger.log("Mensagem recebida pelo serviço: " + msg.toString());
+            switch (msg.what) {
+                case MSG_PARAR_MONITORAMENTO:
+                    pararLeituraSensores();
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+
+
+
+    public boolean pararLeituraSensores() {
+        //Para a leitura de todos os sensores
 //        mAcelerometro.pararLeituraSensor();
-//    }
+        Logger.log("Iniciando auto desligamento do serviço.");
+        try {
+            stopSelf(mStartId);
+        } catch (Exception e) {
+            Logger.log("Erro ao parar serviço [ " + mStartId + " ]. Detalhes: " + e.toString() + "\n" + e.getStackTrace().toString());
+            e.printStackTrace();
+        }
+        return true;
+    }
 
     @Override
+//    public IBinder onBind(final Intent intent) {
+//        return null;
+//    }
     public IBinder onBind(final Intent intent) {
-        return mBinder;
+        Logger.log("Iniciando onBind - iniciando serviço.");
+        return mMessenger.getBinder();
+    }
+
+    @Override
+    public boolean onUnbind(final Intent intent) {
+        Logger.log("Iniciando onUnBind - parando serviço.");
+        return true;
     }
 
     @Override
@@ -120,17 +184,17 @@ public class MonitoramentoSensores extends Service {
         mStartId = startId;
         mContexto = this;
 
-        try {
-            Thread.sleep(1000);
-        } catch (Exception e)  {
-
-        }
-
-        // Iniciando thread para o sensor Acelerômetro
+        // Iniciando thread para o sensor de Aceleração (com gravidade)
         iniciarThreadSensor(startId, Sensor.TYPE_ACCELEROMETER);
+
+        // Iniciando thread para o sensor de Aceleração Linear (sem gravidade)
+        iniciarThreadSensor(startId, Sensor.TYPE_LINEAR_ACCELERATION);
 
         // Iniciando thread para sensor Giroscópio
         iniciarThreadSensor(startId, Sensor.TYPE_GYROSCOPE);
+
+        // Iniciando thread para o sensor de Gravidade
+        iniciarThreadSensor(startId, Sensor.TYPE_GRAVITY);
 
         //Iniciando thread para serviço GPS
         iniciarThreadSensor(startId, Sensor.TYPE_DEVICE_PRIVATE_BASE);
@@ -139,59 +203,94 @@ public class MonitoramentoSensores extends Service {
     }
 
     void iniciarThreadSensor(int startId, int tipoSensor) {
-        // For each start request, send a message to start a job and deliver the
-        // start ID so we know which request we're stopping when we finish the job
-        Message msg = mServiceHandler.obtainMessage();
-        msg.arg1 = mStartId;
-        msg.arg2 = tipoSensor;
-        mServiceHandler.sendMessage(msg);
+        try {
+                // For each start request, send a message to start a job and deliver the
+                // start ID so we know which request we're stopping when we finish the job
+                Message msg = mServiceHandler.obtainMessage();
+                msg.arg1 = mStartId;
+                msg.arg2 = tipoSensor;
+                mServiceHandler.sendMessage(msg);
+        } catch (Exception e){
+            Logger.log("Erro ao iniciar Thread do sensor [ " + startId + " - " + tipoSensor + " ]. Detalhes: " + e.toString() + "\n" + e.getStackTrace().toString());
+        }
     }
+
 
     @Override
     public void onCreate() {
         //super.onCreate();
+        Logger.log("onCreate iniciado");
+        try {
+            //PendingIntent contentIntent = PendingIntent.getActivity(MonitoramentoSensores.this, 0, new Intent(MonitoramentoSensores.this,   MonitoramentoSensores.class), 0);
+            Util.gerarNotificacao(this, "2 Wheels Fall Monitoring", "Serviço de monitoramento iniciado.");
 
-        //PendingIntent contentIntent = PendingIntent.getActivity(MonitoramentoSensores.this, 0, new Intent(MonitoramentoSensores.this,   MonitoramentoSensores.class), 0);
-        Util.gerarNotificacao(this, "2 Wheels Fall Monitoring", "Serviço de monitoramento iniciado.");
-        if (BuildConfig.DEBUG) Logger.log("Serviço de monitoramento iniciado - onCreate");
+            HandlerThread thread = new HandlerThread("ServiceStartArguments",
+                    Process.THREAD_PRIORITY_BACKGROUND);
+            thread.start();
 
-        HandlerThread thread = new HandlerThread("ServiceStartArguments",
-                Process.THREAD_PRIORITY_BACKGROUND);
-        thread.start();
+            // Get the HandlerThread's Looper and use it for our Handler
+            mServiceLooper = thread.getLooper();
+            mServiceHandler = new ServiceHandler(mServiceLooper, mContexto);
 
-        // Get the HandlerThread's Looper and use it for our Handler
-        mServiceLooper = thread.getLooper();
-        mServiceHandler = new ServiceHandler(mServiceLooper, mContexto);
+            Logger.log("Serviço de monitoramento iniciado - onCreate");
 
+        } catch (Exception e){
+            Logger.log("Erro ao iniciar serviço - OnCreate. Detalhes: " + e.toString() + "\n" + e.getStackTrace().toString());
+        }
     }
 
     @Override
     public void onTaskRemoved(final Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-        mensagem = "Serviço de monitoramento removido";
-        if (BuildConfig.DEBUG) Logger.log(mensagem);
-        Util.cancelarNotificacao(mensagem);
-        // Restart service in 500 ms
-        ((AlarmManager) getSystemService(Context.ALARM_SERVICE))
-                .set(AlarmManager.RTC, System.currentTimeMillis() + 500, PendingIntent
-                        .getService(this, 3, new Intent(this, MonitoramentoSensores.class), 0));
+        Logger.log("onTaskRemoved iniciado");
+        try {
+            mensagem = "Serviço de monitoramento removido";
+            if (BuildConfig.DEBUG) Logger.log(mensagem);
+            Util.cancelarNotificacao(mensagem);
+            mServiceHandler.removeMessages(mStartId);
+            // Realizando backup do banco de dados
+            Database db = Database.getInstance(mContexto);
+            db.gerarBackupBD();
+            // Restart service in 500 ms
+            ((AlarmManager) getSystemService(Context.ALARM_SERVICE))
+                    .set(AlarmManager.RTC, System.currentTimeMillis() + 500, PendingIntent
+                            .getService(this, 3, new Intent(this, MonitoramentoSensores.class), 0));
+            super.onTaskRemoved(rootIntent);
+        } catch (Exception e){
+            Logger.log("Erro ao iniciar serviço - onTaskRemoved. Detalhes: " + e.toString() + "\n" + e.getStackTrace().toString());
+        }
+        Logger.log("onTaskRemoved finalizado");
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mensagem = "Serviço de monitoramento finalizado - onDestroy";
-        Logger.log(mensagem);
-        Util.cancelarNotificacao(mensagem);
+    public void onDestroy(){
         try {
+            Logger.log("Serviço de monitoramento finalizado - onDestroy");
+            mensagem = "Serviço de monitoramento finalizado";
+            Util.cancelarNotificacao(mensagem);
 //            mAcelerometro.pararLeituraSensor();
             mServiceHandler.removeMessages(mStartId);
+            // Realizando backup do banco de dados
+            Database db = Database.getInstance(mContexto);
+            db.gerarBackupBD();
         } catch (Exception e) {
-            if (BuildConfig.DEBUG) Logger.log(e);
+            Logger.log("Erro ao parar threads - onDestroy. Detalhes: " + e.toString() + "\n" + e.getStackTrace().toString());
             e.printStackTrace();
         }
+        Logger.log("onDestroy - chamando stopSelf");
         stopSelf();
+        Logger.log("onDestroy - chamando onDestroy da classe mãe");
+        super.onDestroy();
+        Logger.log("onDestroy finalizado");
     }
+
+
+/*    @Override
+    public boolean stopService(Intent i){
+        Logger.log("stopService - chamando stopSelf");
+        stopSelf();
+        Logger.log("stopService - stopSelf executado");
+        return true;
+    }*/
 
     void iniciarMonitoramentoLocalizacao() {
 
@@ -238,7 +337,7 @@ public class MonitoramentoSensores extends Service {
                 long tempo = 3000; //3 segundos
                 float distancia = 0; // 0 metros
 
-                locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, tempo, distancia, ouvinteLocalizacao);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, tempo, distancia, ouvinteLocalizacao);
 
                 mensagem = "Requisição de atualização de localização registrada - Ok";
                 Logger.log(mensagem);

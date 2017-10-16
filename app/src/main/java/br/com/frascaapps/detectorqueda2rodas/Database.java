@@ -48,11 +48,13 @@ public class Database extends SQLiteOpenHelper {
     private final static String APP = "detectorqueda2rodas";
     private final static String DB_NAME = "DB_Log";
     private final static int DB_VERSION = 1;
-    private final static String TB_TIPO_MOVIMENTO = "tb_tipo_movimento";
+    //private final static String TB_TIPO_MOVIMENTO = "tb_tipo_movimento";
     private final static String TB_LOG_ACELEROMETRO = "tb_log_acelerometro";
+    private final static String TB_LOG_ACELEROMETRO_LINEAR = "tb_log_acelerometro_linear";
     private final static String TB_LOG_GIROSCOPIO = "tb_log_giroscopio";
+    private final static String TB_LOG_GRAVIDADE = "tb_log_gravidade";
     private final static String TB_LOG_LOCALIZACAO = "tb_log_localizacao";
-    private final static String TB_LOG = "tb_log";
+//    private final static String TB_LOG = "tb_log";
 
     private static Database instance;
     private static final AtomicInteger openCounter = new AtomicInteger();
@@ -78,10 +80,12 @@ public class Database extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(final SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + TB_LOG + " (data_hora_log INTEGER, mensagem VARCHAR(255) )");
+//        db.execSQL("CREATE TABLE " + TB_LOG + " (data_hora_log INTEGER, mensagem VARCHAR(255) )");
 //        db.execSQL("CREATE TABLE " + TB_TIPO_MOVIMENTO + " (id_movimento INTEGER PRIMARY KEY, descricao_movimento VARCHAR(80))");
         db.execSQL("CREATE TABLE " + TB_LOG_ACELEROMETRO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
+        db.execSQL("CREATE TABLE " + TB_LOG_ACELEROMETRO_LINEAR + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
         db.execSQL("CREATE TABLE " + TB_LOG_GIROSCOPIO + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
+        db.execSQL("CREATE TABLE " + TB_LOG_GRAVIDADE + " (data_hora_log INTEGER, x FLOAT, y FLOAT, z FLOAT)");
         db.execSQL("CREATE TABLE " + TB_LOG_LOCALIZACAO + " (data_hora_log INTEGER, latitude DOUBLE, longitude DOUBLE, altitude DOUBLE, velocidade FLOAT, acuracia FLOAT, provedor VARCHAR(255))");
     }
 
@@ -140,8 +144,14 @@ public class Database extends SQLiteOpenHelper {
                 case Sensor.TYPE_ACCELEROMETER:
                     tabelaSensor = TB_LOG_ACELEROMETRO;
                     break;
+                case Sensor.TYPE_LINEAR_ACCELERATION:
+                    tabelaSensor = TB_LOG_ACELEROMETRO_LINEAR;
+                    break;
                 case Sensor.TYPE_GYROSCOPE:
                     tabelaSensor = TB_LOG_GIROSCOPIO;
+                    break;
+                case Sensor.TYPE_GRAVITY:
+                    tabelaSensor = TB_LOG_GRAVIDADE;
                     break;
                 default:
                     Logger.log("Tipo de Sensor [ " + tipoSensor + " ] não esperado.");
@@ -239,7 +249,9 @@ public class Database extends SQLiteOpenHelper {
         String condicao = "data_hora_log < date('now','-1 day')";
         try {
             getWritableDatabase().delete(TB_LOG_ACELEROMETRO, condicao, null);
+            getWritableDatabase().delete(TB_LOG_ACELEROMETRO_LINEAR, condicao, null);
             getWritableDatabase().delete(TB_LOG_GIROSCOPIO, condicao, null);
+            getWritableDatabase().delete(TB_LOG_GRAVIDADE, condicao, null);
             getWritableDatabase().delete(TB_LOG_LOCALIZACAO, condicao, null);
             Logger.log("Expurgo do banco de dados realizado com sucesso");
         }

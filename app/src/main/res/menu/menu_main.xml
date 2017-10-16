@@ -17,4 +17,9 @@
         android:orderInCategory="100"
         android:title="@string/menuMapa"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menuBackup"
+        android:orderInCategory="100"
+        android:title="@string/menuBackup"
+        app:showAsAction="never" />
 </menu>
